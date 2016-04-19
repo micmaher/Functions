@@ -1,0 +1,103 @@
+﻿Function Show-Port {
+<#
+    .SYNOPSIS
+        Can run and terminate or refresh at specified interval (1 - 60 seconds)
+    .DESCRIPTION
+        Show open network connections for a given process
+        The active process list are presented dynamically for selection       
+    .EXAMPLE
+        Displays the ports in use by the process firefox and refreshes at 5 second intervals
+            Show-Port -Refresh 5 -Proc firefox
+    .EXAMPLE
+        Shows the ports used by the DataExchangeHost then terminates
+            Show-Port -Proc DataExchangeHost
+
+                ProcessName      RemoteIP      RemotePort       State
+                -----------      --------      ----------       -----
+                DataExchangeHost 207.46.101.29         80 Established
+                DataExchangeHost 192.30.252.86        443 Established
+                DataExchangeHost 127.0.0.1          61758 Established
+                DataExchangeHost 127.0.0.1          61759 Established
+                DataExchangeHost 191.232.13...        443 Established
+                DataExchangeHost 191.232.13...        443 Established
+    .LINK
+        Master found on https://gist.github.com/micmaher/8bd1bab98bac20de990ddf9fc0d8d6d6
+    .PARAMETER Refresh
+        Specify the interval between the refresh of data. If excluded the cmdlet will run just once
+        The cmdlet will run for a maximum of 60 seconds
+        The refresh interval can be set from 0 to 20 seconds (A values of 20 seconds would see data refresh 3 times before the cmdlet ends)
+    .PARAMETER Proc
+        This is a dynamic parameter
+        Values for this parameter will be based on what processes are running at the time of execution
+	.NOTES
+        Author: Michael Maher
+    #> 
+    [CmdletBinding()]    
+    Param
+    (
+            # Refresh Interval - defaults to no refresh
+            [Parameter(mandatory=$false,
+                           HelpMessage="Have the results refresh every (x) seconds, to a maximum of one minute", Position=0)]
+            [ValidateRange(0,20)]
+            [Int]$Refresh=0
+    )
+
+    DynamicParam {
+
+    $attributes = new-object System.Management.Automation.ParameterAttribute
+    $attributes.ParameterSetName = "__AllParameterSets"
+    $attributes.Mandatory = $true
+    $attributeCollection =
+
+      New-Object -Type System.Collections.ObjectModel.Collection[System.Attribute]
+
+    $attributeCollection.Add($attributes)
+    $_Values = (Get-Process).name       
+    $ValidateSet =
+      new-object System.Management.Automation.ValidateSetAttribute($_Values)
+    $attributeCollection.Add($ValidateSet)
+    $dynParam1 =
+
+      new-object -Type System.Management.Automation.RuntimeDefinedParameter(
+
+      "Proc", [string], $attributeCollection)
+
+    $paramDictionary =
+
+      New-Object -Type System.Management.Automation.RuntimeDefinedParameterDictionary
+
+    $paramDictionary.Add("Proc", $dynParam1)
+
+    return $paramDictionary }
+
+    Begin{
+        $proc = $PSBoundParameters.proc
+        $timeout = New-TimeSpan -Minutes 1
+        $stopwatch = [diagnostics.stopwatch]::StartNew()
+        } # End Begin
+
+    Process{
+                Do{           
+                        Write-Verbose "Refreshing content every $Refresh seconds"
+                        Write-Verbose "$($stopwatch.elapsed) seconds elapsed" 
+                    
+                        Get-NetTCPConnection | Where {$_.State -eq 'Established'} | ForEach-Object{
+                             [PSCustomObject] @{
+                                 'ProcessName'	= (Get-Process | Where-Object processname -eq $proc).name
+                                 'RemoteIP'		= $_.RemoteAddress
+                                 'RemotePort'	= $_.RemotePort
+                                 'State'		= $_.State
+                             } | Select ProcessName, RemoteIP, RemotePort, State
+                             Start-Sleep -milliseconds 500
+                        } # End foreach loop
+
+                        If ($Refresh -eq 0){break} 
+
+                        Start-Sleep -Seconds $Refresh  
+                        Write-Output '-------------------------------------------------'           
+                    } While  ($stopwatch.elapsed -lt $timeout)
+
+    } #End Process Block
+    
+    End{}
+}
