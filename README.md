@@ -5,4 +5,5 @@ Misc Multi Use Functions
 - Set permissions
 - Sign script
 - Authenticate against corporate proxy
+- Run a port scan for a specific application
 
