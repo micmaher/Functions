@@ -48,10 +48,8 @@ Function Approve-Script{
     Begin{}
     
     Process{
-        if ($pscmdlet.ShouldProcess("Target", "Operation")){
                 $cert=(dir cert:currentuser\my\ -CodeSigningCert)
                 Set-AuthenticodeSignature $scriptPath $cert -TimestampServer http://timestamp.verisign.com/scripts/timstamp.dll
-                }
         }
     
     End{}
