@@ -1,6 +1,6 @@
-function Approve-Script{
+Function Approve-Script{
 <#
-.SYNOPSIS
+.Synopsis
    Digitally sign scripts
 
 .DESCRIPTION
@@ -13,27 +13,18 @@ function Approve-Script{
    Get-ChildItem -Path *.ps1 | Approve-Script $_.path
 
 #>
-    [CmdletBinding(DefaultParameterSetName='Parameter Set 1', 
-                  SupportsShouldProcess=$true, 
-                  PositionalBinding=$false,
-                  ConfirmImpact='Low')]
-    [OutputType([String])]
+    [CmdletBinding(ConfirmImpact='Low')]
     Param(
         [Parameter(Mandatory=$true, 
                    ValueFromPipeline=$true,
                    ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
-                   Position=0,
-                   ParameterSetName='Parameter Set 1')]
+                   Position=0)]
         [ValidateNotNull()]
         [ValidateNotNullOrEmpty()]
-        $scriptPath = $(throw "Please specify a path to the script
-                               For Example: .\signScript c:\scripts\archiveSecLog.ps1")
+        [string[]]$scriptPath
     )
 
-    Begin{
-            If(!(Test-path $scriptPath)) {Write-Output "Path not found:" $scriptPath; Exit}
-            }
+    Begin{}
     
     Process{
         if ($pscmdlet.ShouldProcess("Target", "Operation")){
