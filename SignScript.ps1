@@ -1,17 +1,38 @@
 Function Approve-Script{
 <#
 .Synopsis
-   Digitally sign scripts
+   Digitally sign scripts.
 
 .DESCRIPTION
-   Requires a code signing certificate that is trusted within your organisation
+   Requires a code signing certificate that is trusted within your organisation.
+   See help for New-SelfSignedCertificate cmdlet.
+   New-SelfSignedCertificate uses makecert.exe. This tool is available as part of Visual Studio, or the Windows SDK.
 
 .EXAMPLE
-   Approve-Script -ScriptPath .\copy-module.ps1
+   The following example applies a digital signature to all scripts in C:\Scripts.
+
+   Approve-Script -ScriptPath C:\Scripts\*.ps1
+
+        Directory: C:\Scripts
+
+    SignerCertificate                         Status                                                          Path                                                           
+    -----------------                         ------                                                          ----                                                           
+    3FB56547449EF30E48A19FDE4B85C2DBB6B97309  Valid                                                           archiveSecLog.ps1                                                                                     
+    3FB56547449EF30E48A19FDE4B85C2DBB6B97309  Valid                                                           filesharegroups.ps1                                            
+    3FB56547449EF30E48A19FDE4B85C2DBB6B97309  Valid                                                           getADlocalAdmins.ps1                                            
 
 .EXAMPLE
-   Get-ChildItem -Path *.ps1 | Approve-Script $_.path
+   The following example shows the Approve-Script accepting pipeline input from Get-ChildItem.
 
+   Get-ChildItem -Path C:\scripts\*.ps1 | Approve-Script
+
+        Directory: C:\scripts
+
+    SignerCertificate                         Status                                                          Path                                                           
+    -----------------                         ------                                                          ----                                                           
+    3FB56547449EF30E48A19FDE4B85C2DBB6B97309  Valid                                                           archiveSecLog.ps1                                                                                        
+    3FB56547449EF30E48A19FDE4B85C2DBB6B97309  Valid                                                           filesharegroups.ps1                                            
+    3FB56547449EF30E48A19FDE4B85C2DBB6B97309  Valid                                                           getADlocalAdmins.ps1                                             
 #>
     [CmdletBinding(ConfirmImpact='Low')]
     Param(
