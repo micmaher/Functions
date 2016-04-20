@@ -1,6 +1,6 @@
 Function Approve-Script{
 <#
-.Synopsis
+.SYNOPSIS
    Digitally sign scripts.
 
 .DESCRIPTION
