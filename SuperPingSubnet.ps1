@@ -6,7 +6,7 @@ Function Ping-All{
     Ping an entire subnet quickly (asynchronously)
 .DESCRIPTION
     Uses TestConnectionAsync module from Boe Prox (Msft)
-    The number of days to check back is a mandatory prarmeter
+    
 .EXAMPLE
     This command performs an asynchronous ping on all hosts within your subnet
 
