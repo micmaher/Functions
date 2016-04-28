@@ -7,6 +7,7 @@ Function Ping-Subnet{
     
 .EXAMPLE
     This command performs an asynchronous ping on all hosts within your subnet
+    
     PS OneDrive:\> Ping-Subnet
         Computername    Result
         ------------    ------
@@ -15,21 +16,36 @@ Function Ping-Subnet{
         192.168.192.20 Success
         192.168.192.23 Success
         192.168.192.28 Success
-        192.168.192.30 Success
-        192.168.192.47 Success
-        192.168.192.49 Success
-        192.168.192.60 Success
+
 .EXAMPLE
      This command pings all hosts in the designated subnet
-    PS OneDrive:\> Ping-Subnet -subnet 194.125.2.0
-        Computername   Result
-        ------------   ------
-        194.125.2.207 Success
-        194.125.2.240 Success
-        194.125.2.241 Success
-        194.125.2.252 Success
-        194.125.2.253 Success
-        194.125.2.254 Success
+    
+     PS OneDrive:\> Ping-Subnet -subnet 212.58.244.22
+
+        Computername    Result
+        ------------    ------
+        212.58.244.1   Success
+        212.58.244.3   Success
+        212.58.244.4   Success
+        212.58.244.5   Success
+        212.58.244.11  Success
+
+.EXAMPLE
+     This command finds the hosts which failed to respond to ping
+    
+     PS OneDrive:\> Ping-Subnet -subnet 212.58.244.22 -result TimedOut
+
+        Computername     Result
+        ------------     ------
+        212.58.244.2   TimedOut
+        212.58.244.6   TimedOut
+        212.58.244.7   TimedOut
+
+.EXAMPLE
+    Outputs hosts which responded to ping to a GUI based table
+    
+    PS OneDrive:\> Ping-Subnet -subnet 212.58.244.22 -result Success | Out-GridView
+
 .NOTES
        # To get Test-ConnectionAsync in PowerShell 5.0 use Package Management 
        # Install-Module -Name TestConnectionAsync
@@ -39,10 +55,14 @@ Function Ping-Subnet{
     [cmdletbinding()]
     Param(
           # Subnet to ping (optional)
-          [Parameter(Mandatory=$false,
-                     ValueFromPipelineByPropertyName=$true,
-                     Position=0)]
-          $subnet)
+          [Parameter(Mandatory=$false, ValueFromPipelineByPropertyName=$true, Position=0)]
+          [String]$Subnet,
+
+          # Show Successful or Failed
+          [Parameter(Mandatory=$false)]
+          [ValidateSet('Success', 'TimedOut')]
+          [String]$Result = 'Success'
+          )
 
     Begin{ 
         If (-Not($subnet)){
@@ -54,7 +74,7 @@ Function Ping-Subnet{
             Write-Verbose "Parameter subnet set to $subnet"
             $octect = $subnet -split "\."
             Write-Verbose "$subnet split into $octect"
-            } 
+            }     
          
     }
 
@@ -65,9 +85,10 @@ Function Ping-Subnet{
                     testIP = "$($octect.Item(0)).$($octect.Item(1)).$($octect.Item(2)).$($i)"
                     }
         }         
-        #Invoke-Async -Set $subnet -SetParam computername -Params @{count=1} -Cmdlet Test-Connection -ThreadCount 50 
+
         Write-Verbose "Range to be scanned is $($range.testip)"
-        Test-ConnectionAsync -Computer $range.testip -TimeToLive 20 | select computername, result | where result -eq Success      
+        Test-ConnectionAsync -Computer $range.testip -TimeToLive 2000 | select computername, result | where result -eq $result
+       
     }
 
 } 
@@ -176,4 +197,3 @@ Function Test-ConnectionAsync {
     }
 
 }
-
