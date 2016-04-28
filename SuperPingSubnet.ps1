@@ -1,5 +1,5 @@
 #Requires -Modules TestConnectionAsync
-#Requires -Version 3.0
+#Requires -Version 5.0
 Function Ping-All{  
 <#
 .SYNOPSIS
