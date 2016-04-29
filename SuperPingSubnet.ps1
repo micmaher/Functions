@@ -7,7 +7,7 @@ Function Ping-Subnet{
     
 .EXAMPLE
     This command performs an asynchronous ping on all hosts within your subnet
-    It will only work on Windows 8 or higher as it uses the Get-NetIPConfiguration cmdlet
+    Running the command without specifying a subnet will only work on Windows 8 or higher as it uses the Get-NetIPConfiguration cmdlet
     
     PS OneDrive:\> Ping-Subnet
         Computername    Result
