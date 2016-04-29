@@ -7,6 +7,7 @@ Function Ping-Subnet{
     
 .EXAMPLE
     This command performs an asynchronous ping on all hosts within your subnet
+    It will only work on Windows 8 or higher as it uses the Get-NetIPConfiguration cmdlet
     
     PS OneDrive:\> Ping-Subnet
         Computername    Result
@@ -16,12 +17,10 @@ Function Ping-Subnet{
         192.168.192.20 Success
         192.168.192.23 Success
         192.168.192.28 Success
-
 .EXAMPLE
      This command pings all hosts in the designated subnet
     
-     PS OneDrive:\> Ping-Subnet -subnet 212.58.244.22
-
+     PS OneDrive:\> Ping-Subnet -subnet 212.58.244.0
         Computername    Result
         ------------    ------
         212.58.244.1   Success
@@ -29,23 +28,19 @@ Function Ping-Subnet{
         212.58.244.4   Success
         212.58.244.5   Success
         212.58.244.11  Success
-
 .EXAMPLE
-     This command finds the hosts which failed to respond to ping
+     This command reports the hosts on the given subnet which failed to respond to ping
     
      PS OneDrive:\> Ping-Subnet -subnet 212.58.244.22 -result TimedOut
-
         Computername     Result
         ------------     ------
         212.58.244.2   TimedOut
         212.58.244.6   TimedOut
         212.58.244.7   TimedOut
-
 .EXAMPLE
     Outputs hosts which responded to ping to a GUI based table
     
     PS OneDrive:\> Ping-Subnet -subnet 212.58.244.22 -result Success | Out-GridView
-
 .NOTES
        # To get Test-ConnectionAsync in PowerShell 5.0 use Package Management 
        # Install-Module -Name TestConnectionAsync
@@ -56,6 +51,7 @@ Function Ping-Subnet{
     Param(
           # Subnet to ping (optional)
           [Parameter(Mandatory=$false, ValueFromPipelineByPropertyName=$true, Position=0)]
+          [ValidateScript({$_ -match [IPAddress]$_ })]  
           [String]$Subnet,
 
           # Show Successful or Failed
@@ -66,9 +62,18 @@ Function Ping-Subnet{
 
     Begin{ 
         If (-Not($subnet)){
-            Write-Verbose "Checking local subnet"
-            $myIP = Get-NetIPConfiguration | Select IPv4Address
-            $octect = $myIP.IPv4Address.IPv4Address -split "\." # backslash is escape char
+            Write-Verbose "Checking OS Version"
+            If((Get-CimInstance -ClassName Win32_OperatingSystem).Version -ge 6.2){
+                Write-Verbose "Checking local subnet"
+                $myIP = Get-NetIPConfiguration | Select IPv4Address
+                $octect = $myIP.IPv4Address.IPv4Address -split "\." # backslash is escape char
+                }
+            Else{
+                Write-Host -ForegroundColor Green "On your version of Windows you need to supply a value for the -Subnet parameter `n
+                Example: `n
+                PS C:\> Ping-Subnet -subnet 172.26.75.0"
+                break
+                }
             }
         Else{ 
             Write-Verbose "Parameter subnet set to $subnet"
