@@ -4,6 +4,7 @@ $Kdate = (Get-Date).ToString('yyyy-MM-dd_H-mm')
 $kScriptRoot = 'C:\Scripts\'
 $klogRoot = "$kScriptRoot\Logs"
 $runAsAccount = "Domain\tasks"
+$fileserver = 'fileserver'
 
 $dc = Get-ADDomainController -Filter * | where {$_.OperatingSystem -notlike "*2008*"}
 $kPassEncrypt = (Get-SavedCredential $runAsAccount -Context $scheduledScript -ErrorAction SilentlyContinue)
@@ -14,7 +15,7 @@ $Password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
 
 Foreach ($d in $dc){
     If (-not(Test-Path "\\$($d.HostName)\C`$\Scripts\")){New-Item -ItemType directory -Path "\\$($d.HostName)\C`$\Scripts\"}
-    If (-not(Test-Path "\\$($d.HostName)\C`$\Scripts\$scheduledScript.ps1")){Copy-Item -Recurse -Path "\\ndh-rep-01\e$\Scripts\serverInventory\Run on DC\$scheduledScript.ps1" -Destination "\\$($d.HostName)\C$\Scripts" -PassThru}
+    If (-not(Test-Path "\\$($d.HostName)\C`$\Scripts\$scheduledScript.ps1")){Copy-Item -Recurse -Path "\\$fileserver\e$\Scripts\$scheduledScript.ps1" -Destination "\\$($d.HostName)\C$\Scripts" -PassThru}
     
     $session = New-PSSession -ComputerName $d.HostName -Credential $kPassEncrypt
     Invoke-Command -Session $session -ScriptBlock {
