@@ -8,3 +8,6 @@ Misc Multi Use Functions
 - Run a port scan for a specific application
 - Nicer formatting of error messages (3rd party script)
 
+# Samples
+
+- Set up a Scheduled Task on remote systems
